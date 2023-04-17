@@ -21,8 +21,6 @@
 #include "rclcpp/node.hpp"
 #include "rclcpp_action/create_client.hpp"
 
-namespace play_motion2
-{
 
 constexpr auto START_TIMEOUT = 30s;
 
@@ -73,8 +71,14 @@ void PlayMotion2NodeTest::SetUp()
   pm2_action_client_ = rclcpp_action::create_client<PlayMotion2>(
     client_node_, "play_motion2");
 
+  ASSERT_TRUE(pm2_action_client_->wait_for_action_server(TIMEOUT)) <<
+    "Timeout while waiting for play_motion2 action";
+
   switch_controller_client_ = client_node_->create_client<SwitchController>(
     "controller_manager/switch_controller");
+
+  ASSERT_TRUE(switch_controller_client_->wait_for_service(TIMEOUT)) <<
+    "Timeout while waiting for switch_controller service";
 
   ASSERT_NO_THROW(restore_controllers());
 }
@@ -173,7 +177,7 @@ TEST_F(PlayMotion2NodeTest, ListMotionsSrvTest)
 
   const auto result = future_result.get();
 
-  ASSERT_EQ(result->motion_keys.size(), 2);
+  ASSERT_EQ(result->motion_keys.size(), 2u);
 
   std::sort(result->motion_keys.begin(), result->motion_keys.end());
   ASSERT_EQ(result->motion_keys[0], "home");
@@ -271,5 +275,3 @@ TEST_F(PlayMotion2NodeTest, ControllersChangedDuringExecution)
 {
   execute_failing_motion(1s);
 }
-
-}  // namespace play_motion2
