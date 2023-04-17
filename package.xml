@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>play_motion2</name>
-  <version>0.0.4</version>
+  <version>0.0.7</version>
 
   <description>Play a pre-recorded motion on a robot</description>
 
@@ -12,7 +12,7 @@
 
   <author email="noel.jimenez@pal-robotics.com">Noel Jimenez</author>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>control_msgs</depend>
   <depend>controller_manager_msgs</depend>
@@ -37,6 +37,7 @@
   <test_depend>launch_ros</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>pluginlib</test_depend>
+  <test_depend>robot_state_publisher</test_depend>
   <test_depend>xacro</test_depend>
 
   <export>
