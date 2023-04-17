@@ -2,6 +2,47 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.7 (2023-04-17)
+------------------
+* remove meta information from mandatory parameters
+* Contributors: Noel Jimenez
+
+0.0.6 (2023-03-20)
+------------------
+* Merge branch 'remove_tests_namespace' into 'humble-devel'
+  remove namespaces from tests
+  See merge request app-tools/play_motion2!22
+* remove namespaces from tests
+* Merge branch 'fix_warns' into 'humble-devel'
+  Fix warnings
+  See merge request app-tools/play_motion2!21
+* not catch exception by value
+* change types for comparisons
+* comment unused arguments
+* order variables initialization
+* Merge branch 'wait_for_service_and_action' into 'humble-devel'
+  wait for service and action after creating clients
+  See merge request app-tools/play_motion2!20
+* wait for service and action after creating clients
+* Merge branch 'ament_cmake_auto' into 'humble-devel'
+  switch to ament_cmake_auto
+  See merge request app-tools/play_motion2!19
+* switch to ament_cmake_auto
+* Merge branch 'rm_ament_cmake_pal' into 'humble-devel'
+  remove ament_cmake_pal
+  See merge request app-tools/play_motion2!18
+* remove ament_cmake_pal
+* Contributors: Jordan Palacios, Mathias Lüdtke, Noel Jimenez
+
+0.0.5 (2023-03-01)
+------------------
+* Merge branch 'add_missing_dependency' into 'humble-devel'
+  add missing test dependency robot_state_publisher and remove initial / from controllers config
+  See merge request app-tools/play_motion2!17
+* remove initial / from controllers config
+* add missing test dependency robot_state_publisher
+* Contributors: Jordan Palacios, Noel Jimenez
+
 0.0.4 (2023-02-23)
 ------------------
 * Merge branch 'fix_test' into 'humble-devel'

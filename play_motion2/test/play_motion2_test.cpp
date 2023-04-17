@@ -23,8 +23,6 @@
 #include "play_motion2_test.hpp"
 #include "rclcpp/parameter_client.hpp"
 
-namespace play_motion2
-{
 
 void PlayMotion2Test::SetUpTestSuite()
 {
@@ -62,12 +60,10 @@ void PlayMotion2Test::TearDown()
 TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
 {
   // void valid motions
-  play_motion2_->undeclare_parameter("motions.home.meta.name");
-  play_motion2_->undeclare_parameter("motions.pose1.meta.name");
+  play_motion2_->undeclare_parameter("motions.home.joints");
+  play_motion2_->undeclare_parameter("motions.pose1.times_from_start");
 
   ASSERT_EQ(
     play_motion2_->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE).label(), "unconfigured");
 }
-
-}  // namespace play_motion2
