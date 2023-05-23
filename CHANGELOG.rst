@@ -2,6 +2,15 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.8 (2023-05-22)
+------------------
+* add 1 extra second to motions timeout
+  To avoid that motions with only one position fail when the robot is
+  already in that position
+* fill error field and be more verbose
+* cancel action goals when requested
+* Contributors: Noel Jimenez
+
 0.0.7 (2023-04-17)
 ------------------
 * remove meta information from mandatory parameters
