@@ -2,6 +2,9 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.8 (2023-05-22)
+------------------
+
 0.0.7 (2023-04-17)
 ------------------
 * add linters properly for interfaces
