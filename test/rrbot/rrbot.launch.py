@@ -12,46 +12,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import pathlib
+import xacro
 
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
-from launch_pal.include_utils import include_launch_py_description
 from launch_ros.actions import Node
-import xacro
+
+RRBOT_DIR = str(pathlib.Path(__file__).resolve().parent)
 
 
 def generate_launch_description():
 
+    # Visualize the robot for debugging purposes
     use_rviz = DeclareLaunchArgument(
         'rviz',
         default_value='False',
         description='Whether run rviz',
         choices=['True', 'False'])
 
-    robot_description_path = os.path.join(
-        get_package_share_directory('play_motion2'), 'test', 'rrbot.xacro')
-    robot_description_config = xacro.process_file(robot_description_path)
+    robot_description_config = xacro.process_file(RRBOT_DIR + '/rrbot.xacro')
     robot_description = {'robot_description': robot_description_config.toxml()}
-
-    rrbot_controllers = os.path.join(
-        get_package_share_directory('play_motion2'),
-        'test', 'controller_manager.yaml')
-
-    rviz_config_file = os.path.join(
-        get_package_share_directory('play_motion2'), 'test', 'rrbot.rviz')
 
     control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
-        parameters=[robot_description, rrbot_controllers],
+        parameters=[robot_description, RRBOT_DIR + '/controllers.yaml'],
         output='both')
 
-    controllers = include_launch_py_description(
-        'play_motion2', ['test', 'controllers.launch.py'])
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+    )
+
+    controller_1_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["controller_1", "--controller-manager", "/controller_manager"],
+    )
+
+    controller_2_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["controller_2", "--controller-manager", "/controller_manager"],
+    )
 
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
@@ -59,6 +66,7 @@ def generate_launch_description():
         output='both',
         parameters=[robot_description])
 
+    rviz_config_file = RRBOT_DIR + '/rrbot.rviz'
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -73,8 +81,10 @@ def generate_launch_description():
     ld.add_action(use_rviz)
 
     ld.add_action(control_node)
-    ld.add_action(controllers)
     ld.add_action(robot_state_publisher_node)
+    ld.add_action(joint_state_broadcaster_spawner)
+    ld.add_action(controller_1_spawner)
+    ld.add_action(controller_2_spawner)
     ld.add_action(rviz_node)
 
     return ld
