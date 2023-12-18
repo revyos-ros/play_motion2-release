@@ -2,6 +2,32 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.13 (2023-12-14)
+-------------------
+* Rename launch argument for motions config
+* Add default approach_planner config
+* Add launch argument for approach_planner config
+* Fix approach planner parameters check condition
+* Avoid installing test configuration files
+* Join test config files
+* Fix motion_loader_test node name and params file
+* Fix parameters node names
+* Simplify controllers usage for testing
+* Create MotionLoader to replace helpers
+* Contributors: Noel Jimenez
+
+0.0.12 (2023-11-14)
+-------------------
+* Add website tag
+* Contributors: Noel Jimenez
+
+0.0.11 (2023-11-13)
+-------------------
+* Set use_sim_time false as default
+* Fix launch dependencies
+* Fix launch argument description
+* Contributors: Noel Jimenez
+
 0.0.10 (2023-10-02)
 -------------------
 * Move ApproachPlanner to a different class

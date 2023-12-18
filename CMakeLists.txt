@@ -7,7 +7,7 @@ ament_auto_find_build_dependencies()
 # play_motion2
 ament_auto_add_library(play_motion2 SHARED
   src/play_motion2/approach_planner.cpp
-  src/play_motion2/play_motion2_helpers.cpp
+  src/play_motion2/motion_loader.cpp
   src/play_motion2/play_motion2.cpp
 )
 
@@ -20,25 +20,6 @@ if(BUILD_TESTING)
   ament_auto_find_test_dependencies()
   ament_lint_auto_find_test_dependencies()
 
-  # test configuration files
-  install(
-    FILES
-      test/config.yaml
-      test/play_motion2_config.yaml
-      test/rrbot/controller_1.launch.py
-      test/rrbot/controller_1.yaml
-      test/rrbot/controller_2.launch.py
-      test/rrbot/controller_2.yaml
-      test/rrbot/controller_manager.yaml
-      test/rrbot/controllers.launch.py
-      test/rrbot/joint_state_broadcaster.launch.py
-      test/rrbot/joint_state_broadcaster.yaml
-      test/rrbot/rrbot.launch.py
-      test/rrbot/rrbot.rviz
-      test/rrbot/rrbot.xacro
-    DESTINATION share/${PROJECT_NAME}/test
-  )
-
   # rrbot_system
   ament_auto_add_library(rrbot_system SHARED
     test/rrbot/rrbot_system.cpp
@@ -50,9 +31,9 @@ if(BUILD_TESTING)
   )
   pluginlib_export_plugin_description_file(hardware_interface test/rrbot/rrbot_system.xml)
 
-  # play_motion2_helpers_test
-  ament_auto_add_gtest(play_motion2_helpers_test
-    test/play_motion2_helpers_test.cpp
+  # motion_loader_test
+  ament_auto_add_gtest(motion_loader_test
+    test/motion_loader_test.cpp
   )
 
   # play_motion2_test
@@ -74,7 +55,7 @@ if(BUILD_TESTING)
 
   install(
     TARGETS play_motion2_node_test
-    DESTINATION share/${PROJECT_NAME}/test
+    DESTINATION lib/${PROJECT_NAME}
   )
 
   add_launch_test(
@@ -82,4 +63,4 @@ if(BUILD_TESTING)
   )
 endif()
 
-ament_auto_package(INSTALL_TO_SHARE launch)
+ament_auto_package(INSTALL_TO_SHARE config launch)
