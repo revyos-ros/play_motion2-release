@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>play_motion2</name>
-  <version>0.0.10</version>
+  <version>0.0.13</version>
 
   <description>Play a pre-recorded motion on a robot</description>
 
@@ -11,6 +11,8 @@
   <license>Apache License 2.0</license>
 
   <author email="noel.jimenez@pal-robotics.com">Noel Jimenez</author>
+
+  <url type="website">https://github.com/pal-robotics/play_motion2</url>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
@@ -24,6 +26,9 @@
   <depend>sensor_msgs</depend>
   <depend>trajectory_msgs</depend>
 
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_index_cpp</test_depend>
   <test_depend>ament_lint_auto</test_depend>
@@ -34,7 +39,6 @@
   <test_depend>joint_state_broadcaster</test_depend>
   <test_depend>joint_trajectory_controller</test_depend>
   <test_depend>launch_pal</test_depend>
-  <test_depend>launch_ros</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>pluginlib</test_depend>
   <test_depend>robot_state_publisher</test_depend>
