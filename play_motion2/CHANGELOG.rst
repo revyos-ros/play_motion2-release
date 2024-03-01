@@ -2,6 +2,59 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.0 (2024-02-28)
+------------------
+* Rename planner launch argument and update its config
+* Fix condition for checking planning groups parameter
+* Enhance loop condition
+* Enhance way of getting parameters
+* Store parameter names in constants
+* Remove unused method
+* Complete comment
+* Remove unnecessary variable all_joints_included
+* Fix condition when checking valid move groups
+* Update non-planned motion tests
+* Remove line jump from log
+* Add planning capability
+* Add logic for planning parameters
+* Create a MoveGroupInterfacePtr for each planning group
+* Parse planning related parameters
+* Include key in MotionInfo
+* Handle INVALID Result State
+* Remove unused function
+* Rename motion_info to info
+* Remove unused boolean variable
+* Delete commented code
+* Fix Result State type
+* Enable motion canceling
+* Use auto
+* Move all the execution logic to MotionPlanner
+  Now the MotionPlanner is the responsible of sending the goals for
+  performing the motions. As well the motion has been splitted in two
+  parts: Approach and Motion
+  The Approach part is the movement from the initial point to the first
+  position, and the rest of the positions form the Motion
+* Get motion_planner parameters on constructor
+* Rename ApproachPlanner to MotionPlanner
+* Use play_motion2 node for ApproachPlanner
+* Update types
+* Contributors: Jordan Palacios, Noel Jimenez
+
+0.0.15 (2024-01-15)
+-------------------
+* Change callback_group to MutuallyExclusive
+  Reentrant callback group sometimes throws an unexpected runtime
+  exception: 'Executing action client but nothing is ready'. It is caused
+  because this type of callback group can execute different parts of the
+  same callback concurrently.
+* Specify mutex type for unique_lock
+* Contributors: Aina Irisarri, Noel Jimenez
+
+0.0.14 (2024-01-08)
+-------------------
+* Avoid exporting lifecycle_msgs dependency
+* Contributors: Noel Jimenez
+
 0.0.13 (2023-12-14)
 -------------------
 * Rename launch argument for motions config
