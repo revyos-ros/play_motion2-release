@@ -61,8 +61,11 @@ public:
     const GoalHandlePM2 & future_goal_handle,
     const rclcpp_action::ResultCode & expected_result) const;
 
-  void execute_succesful_motion(const std::string & motion_name) const;
-  void execute_failing_motion(const std::chrono::seconds & duration) const;
+  void execute_motion(const std::string & motion_name) const;
+  void execute_motion_deactivating_controller_1(
+    const std::chrono::seconds & duration,
+    const std::string & motion_key,
+    const rclcpp_action::ResultCode & code) const;
 
 protected:
   rclcpp::Node::SharedPtr client_node_;

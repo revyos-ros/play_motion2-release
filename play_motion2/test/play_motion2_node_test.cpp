@@ -178,11 +178,12 @@ TEST_F(PlayMotion2NodeTest, ListMotionsSrvTest)
 
   const auto result = future_result.get();
 
-  ASSERT_EQ(result->motion_keys.size(), 2u);
+  ASSERT_EQ(result->motion_keys.size(), 3u);
 
   std::sort(result->motion_keys.begin(), result->motion_keys.end());
-  ASSERT_EQ(result->motion_keys[0], "home");
-  ASSERT_EQ(result->motion_keys[1], "pose1");
+  ASSERT_EQ(result->motion_keys[0], "controller_2_pose");
+  ASSERT_EQ(result->motion_keys[1], "home");
+  ASSERT_EQ(result->motion_keys[2], "pose1");
 }
 
 TEST_F(PlayMotion2NodeTest, BadMotionName)
@@ -222,7 +223,7 @@ TEST_F(PlayMotion2NodeTest, ControllerDeactivated)
   ASSERT_FALSE(goal_handle);
 }
 
-void PlayMotion2NodeTest::execute_succesful_motion(const std::string & motion_name) const
+void PlayMotion2NodeTest::execute_motion(const std::string & motion_name) const
 {
   // create and send goal
   FutureGoalHandlePM2 goal_handle_future;
@@ -238,20 +239,23 @@ void PlayMotion2NodeTest::execute_succesful_motion(const std::string & motion_na
 
 TEST_F(PlayMotion2NodeTest, SuccesfulMotionWithDisplacement)
 {
-  execute_succesful_motion("home");
+  execute_motion("home");
 }
 
 TEST_F(PlayMotion2NodeTest, SuccesfulMotionOnSite)
 {
   // the previous test has moved the rrbot to this position so the robot does not have to move
-  execute_succesful_motion("home");
+  execute_motion("home");
 }
 
-void PlayMotion2NodeTest::execute_failing_motion(const std::chrono::seconds & duration) const
+void PlayMotion2NodeTest::execute_motion_deactivating_controller_1(
+  const std::chrono::seconds & duration,
+  const std::string & motion_key,
+  const rclcpp_action::ResultCode & code) const
 {
   // create and send goal
   FutureGoalHandlePM2 goal_handle_future;
-  send_pm2_goal("pose1", goal_handle_future);
+  send_pm2_goal(motion_key, goal_handle_future);
 
   auto goal_handle = goal_handle_future.get();
 
@@ -260,19 +264,26 @@ void PlayMotion2NodeTest::execute_failing_motion(const std::chrono::seconds & du
   // sleep to give time to send all follow_joint_trajectory goals
   std::this_thread::sleep_for(duration);
 
-  // deactivate controller_1 to make motion fail
+  // deactivate controller_1
   deactivate_controllers({"controller_1"});
 
   // wait for result
-  wait_pm2_result(goal_handle, rclcpp_action::ResultCode::ABORTED);
+  wait_pm2_result(goal_handle, code);
 }
 
 TEST_F(PlayMotion2NodeTest, ControllersChangedBeforeExecution)
 {
-  execute_failing_motion(0s);
+  execute_motion_deactivating_controller_1(0s, "pose1", rclcpp_action::ResultCode::ABORTED);
 }
 
 TEST_F(PlayMotion2NodeTest, ControllersChangedDuringExecution)
 {
-  execute_failing_motion(1s);
+  execute_motion_deactivating_controller_1(1s, "pose1", rclcpp_action::ResultCode::ABORTED);
+}
+
+TEST_F(PlayMotion2NodeTest, UnusedControllersChangedDuringExecution)
+{
+  execute_motion_deactivating_controller_1(
+    1s, "controller_2_pose",
+    rclcpp_action::ResultCode::SUCCEEDED);
 }
