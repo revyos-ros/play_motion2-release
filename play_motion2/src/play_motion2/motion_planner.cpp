@@ -214,21 +214,27 @@ MotionInfo MotionPlanner::prepare_approach(const MotionInfo & info)
   return approach_info;
 }
 
-Result MotionPlanner::perform_unplanned_motion(
+Result MotionPlanner::perform_motion(
   const MotionInfo & info,
   const JointTrajectory & planned_approach)
 {
-  std::list<FollowJTGoalHandleFutureResult> futures_list;
-  double final_motion_time;
-  const auto send_result =
-    send_trajectories(info, planned_approach, futures_list, final_motion_time);
+  // Generate controller trajectories and save the final motion time
+  const auto ctrl_trajectories = generate_controller_trajectories(info, planned_approach);
+  const auto final_motion_time = rclcpp::Duration(
+    ctrl_trajectories.begin()->second.points.back().time_from_start).seconds();
 
+  std::list<FollowJTGoalHandleFutureResult> futures_list;
+  const auto send_result = send_trajectories(info.key, ctrl_trajectories, futures_list);
   if (send_result.state != Result::State::SUCCESS) {
     return send_result;
   }
 
-  const auto result = wait_for_results(
-    futures_list, final_motion_time);
+  std::vector<std::string> controllers;
+  for (const auto & traj : ctrl_trajectories) {
+    controllers.push_back(traj.first);
+  }
+
+  const auto result = wait_for_results(controllers, final_motion_time, futures_list);
 
   return result;
 }
@@ -255,13 +261,23 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
         time = time - info.times[0] + approach_time;
       }
     }
-    return perform_unplanned_motion(unplanned_info, JointTrajectory());
+    return perform_motion(unplanned_info, JointTrajectory());
   }
 
   // Planned motion
   auto move_groups = get_valid_move_groups(info.joints);
   if (move_groups.empty()) {
     return Result(Result::State::ERROR, "No valid move groups found for the given joints");
+  }
+
+  if (!needs_approach(approach_info)) {
+    // If the approach trajectory is not needed and there is only one position in the motion,
+    // i.e., the motion is only the approach, then the goal is already achieved.
+    if (approach_info.positions.size() == approach_info.joints.size()) {
+      return Result(Result::State::SUCCESS);
+    }
+
+    return perform_motion(info, JointTrajectory());
   }
 
   MoveGroupInterface::Plan approach_plan;
@@ -276,7 +292,7 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
     return Result(Result::State::ERROR, "Failed to plan approach trajectory");
   }
 
-  return perform_unplanned_motion(info, approach_plan.trajectory_.joint_trajectory);
+  return perform_motion(info, approach_plan.trajectory_.joint_trajectory);
 }
 
 double MotionPlanner::calculate_approach_time(
@@ -562,31 +578,22 @@ FollowJTGoalHandleFutureResult MotionPlanner::send_trajectory(
 }
 
 Result MotionPlanner::send_trajectories(
-  const MotionInfo & info,
-  const JointTrajectory & planned_approach,
-  std::list<FollowJTGoalHandleFutureResult> & futures_list,
-  double & final_motion_time)
+  const std::string & motion_key,
+  const ControllerTrajectories & ctrl_trajectories,
+  std::list<FollowJTGoalHandleFutureResult> & futures_list)
 {
-  const auto ctrl_trajectories = generate_controller_trajectories(info, planned_approach);
-
-  // Save the final motion time
-  final_motion_time = rclcpp::Duration(
-    ctrl_trajectories.begin()->second.points.back().time_from_start).seconds();
-
   for (const auto & [controller, trajectory] : ctrl_trajectories) {
     auto jtc_future_gh = send_trajectory(controller, trajectory);
     if (!jtc_future_gh.valid()) {
       RCLCPP_INFO_STREAM(
         node_->get_logger(),
-        "Cannot perform motion '" << info.key << "'");
+        "Cannot perform motion '" << motion_key << "'");
       // cancel all sent goals
-      for (const auto & client : action_clients_) {
-        client.second->async_cancel_all_goals();
-      }
+      cancel_all_goals();
 
       return Result(
         Result::State::ERROR,
-        "Motion " + info.key + " aborted. Cannot send goal to " + controller);
+        "Motion " + motion_key + " aborted. Cannot send goal to " + controller);
     }
     futures_list.push_back(std::move(jtc_future_gh));
   }
@@ -595,8 +602,9 @@ Result MotionPlanner::send_trajectories(
 }
 
 Result MotionPlanner::wait_for_results(
-  std::list<FollowJTGoalHandleFutureResult> & futures_list,
-  const double motion_time)
+  const std::vector<std::string> & motion_controllers,
+  const double motion_time,
+  std::list<FollowJTGoalHandleFutureResult> & futures_list)
 {
   Result result;
   bool failed = false;
@@ -634,40 +642,37 @@ Result MotionPlanner::wait_for_results(
     auto current_states = filter_controller_states(
       get_controller_states(), "active", "joint_trajectory_controller/JointTrajectoryController");
 
+    // If any controller changes, check if it is used in the motion.
+    // If so, cancel all goals and return an error.
     if (current_states != motion_controller_states_) {
-      std::string controller_name = "";
-
-      for (const auto & motion_controller : motion_controller_states_) {
-        const auto controller = std::find_if(
-          current_states.cbegin(), current_states.cend(),
-          [&](const auto & current_controller_state) {
-            return current_controller_state.name == motion_controller.name;
-          });
-
-        if (controller == current_states.end()) {
-          controller_name = motion_controller.name;
-        }
+      std::vector<std::string> current_controllers;
+      for (const auto & controller : current_states) {
+        current_controllers.push_back(controller.name);
       }
 
-      failed = true;
-      result = Result(
-        Result::State::ERROR,
-        "State of controller '" + controller_name +
-        "' has changed while executing the motion");
-      RCLCPP_ERROR_STREAM(node_->get_logger(), result.error);
+      for (const auto & controller : motion_controllers) {
+        if (std::find(current_controllers.begin(), current_controllers.end(), controller) ==
+          current_controllers.end())
+        {
+          cancel_all_goals();
+          failed = true;
+          result = Result(
+            Result::State::ERROR,
+            "Controller '" + controller + "' has been deactivated while executing the motion");
+          RCLCPP_ERROR_STREAM(node_->get_logger(), result.error);
+        }
+      }
     }
 
     if (is_canceling_) {
-      // cancel all sent goals
-      for (const auto & client : action_clients_) {
-        client.second->async_cancel_all_goals();
-      }
+      cancel_all_goals();
       futures_list.clear();
       return Result(Result::State::CANCELED, "Motion canceled");
     }
   } while (!failed && !futures_list.empty() && on_time);
 
   if (!on_time) {
+    cancel_all_goals();
     result = Result(Result::State::ERROR, "Timeout exceeded while waiting for results");
     RCLCPP_ERROR_STREAM(node_->get_logger(), result.error);
   } else if (!failed) {   // All goals succeeded
@@ -753,4 +758,36 @@ bool MotionPlanner::are_all_joints_included(
   }
   return true;
 }
+
+bool MotionPlanner::needs_approach(const MotionInfo & approach_info)
+{
+  // Wait until joint_states_ updated and set current positions
+  std::unique_lock<std::mutex> lock(joint_states_mutex_);
+  joint_states_updated_ = false;
+  joint_states_condition_.wait(lock, [&] {return joint_states_updated_;});
+
+  for (const auto & joint : approach_info.joints) {
+    {
+      const auto joint_pos = std::distance(
+        approach_info.joints.begin(),
+        std::find(approach_info.joints.begin(), approach_info.joints.end(), joint));
+      const auto goal_pos = approach_info.positions[joint_pos];
+      const auto current_pos = joint_states_[joint][0];
+
+      if (std::abs(current_pos - goal_pos) > joint_tolerance_) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void MotionPlanner::cancel_all_goals()
+{
+  // cancel all sent goals
+  for (const auto & client : action_clients_) {
+    client.second->async_cancel_all_goals();
+  }
+}
+
 }     // namespace play_motion2
