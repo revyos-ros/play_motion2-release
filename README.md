@@ -1,3 +1,28 @@
+## play_motion2 (humble) - 1.1.0-1
+
+The packages in the `play_motion2` repository were released into the `humble` distro by running `/usr/bin/bloom-release --track humble --rosdistro humble play_motion2` on `Wed, 03 Apr 2024 10:18:21 -0000`
+
+These packages were released:
+- `play_motion2`
+- `play_motion2_msgs`
+
+Version of package(s) in repository `play_motion2`:
+
+- upstream repository: https://github.com/pal-robotics/play_motion2.git
+- release repository: https://github.com/pal-gbp/play_motion2-release.git
+- rosdistro version: `1.0.0-1`
+- old version: `1.0.0-1`
+- new version: `1.1.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.12.0`
+- catkin_pkg version: `1.0.0`
+- rosdep version: `0.22.2`
+- rosdistro version: `0.9.0`
+- vcstools version: `0.1.42`
+
+
 ## play_motion2 (humble) - 1.0.0-1
 
 The packages in the `play_motion2` repository were released into the `humble` distro by running `/usr/bin/bloom-release --track humble --rosdistro humble play_motion2` on `Fri, 01 Mar 2024 07:33:28 -0000`
