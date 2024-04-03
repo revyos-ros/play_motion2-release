@@ -24,6 +24,12 @@ play_motion2:
           usage: test
           description: 'pose1'
 
+      controller_2_pose:
+        joints:
+          - joint2
+        positions: [0.1]
+        times_from_start: [5.0]
+
       # no valid motions
       no_joints:
         positions: [0.0, 0.0,

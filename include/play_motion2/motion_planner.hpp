@@ -71,7 +71,7 @@ private:
 
   MotionInfo prepare_approach(const MotionInfo & info);
 
-  Result perform_unplanned_motion(
+  Result perform_motion(
     const MotionInfo & info,
     const JointTrajectory & planned_approach);
 
@@ -101,14 +101,14 @@ private:
     const JointTrajectory & trajectory);
 
   Result send_trajectories(
-    const MotionInfo & info,
-    const JointTrajectory & planned_approach,
-    std::list<FollowJTGoalHandleFutureResult> & futures_list,
-    double & final_motion_time);
+    const std::string & motion_key,
+    const ControllerTrajectories & ctrl_trajectories,
+    std::list<FollowJTGoalHandleFutureResult> & futures_list);
 
   Result wait_for_results(
-    std::list<FollowJTGoalHandleFutureResult> & futures_list,
-    const double motion_time);
+    const std::vector<std::string> & motion_controllers,
+    const double motion_time,
+    std::list<FollowJTGoalHandleFutureResult> & futures_list);
 
   std::vector<MoveGroupInterfacePtr> get_valid_move_groups(const JointNames & joints) const;
   JointNames get_planned_joints(const JointNames & joints) const;
@@ -120,6 +120,10 @@ private:
   bool are_all_joints_included(
     const JointNames & full_joint_names,
     const JointNames & partial_joint_names) const;
+
+  bool needs_approach(const MotionInfo & approach_info);
+
+  void cancel_all_goals();
 
 private:
   double approach_vel_;
