@@ -63,6 +63,7 @@ TEST_F(PlayMotion2Test, WrongMotionsConfigTest)
   // void valid motions
   play_motion2_->undeclare_parameter("motions.home.joints");
   play_motion2_->undeclare_parameter("motions.pose1.times_from_start");
+  play_motion2_->undeclare_parameter("motions.controller_2_pose.times_from_start");
 
   ASSERT_EQ(
     play_motion2_->trigger_transition(
