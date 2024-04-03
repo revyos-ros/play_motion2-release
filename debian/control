@@ -1,0 +1,12 @@
+Source: ros-humble-play-motion2
+Section: misc
+Priority: optional
+Maintainer: Noel Jimenez <noel.jimenez@pal-robotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-humble-ament-cmake-auto, ros-humble-ament-cmake-gtest <!nocheck>, ros-humble-ament-index-cpp <!nocheck>, ros-humble-ament-lint-auto <!nocheck>, ros-humble-ament-lint-common <!nocheck>, ros-humble-control-msgs, ros-humble-controller-manager <!nocheck>, ros-humble-controller-manager-msgs, ros-humble-hardware-interface <!nocheck>, ros-humble-joint-state-broadcaster <!nocheck>, ros-humble-joint-trajectory-controller <!nocheck>, ros-humble-launch-pal <!nocheck>, ros-humble-launch-testing-ament-cmake <!nocheck>, ros-humble-lifecycle-msgs, ros-humble-moveit-ros-planning-interface, ros-humble-play-motion2-msgs, ros-humble-pluginlib <!nocheck>, ros-humble-rclcpp, ros-humble-rclcpp-action, ros-humble-rclcpp-lifecycle, ros-humble-robot-state-publisher <!nocheck>, ros-humble-sensor-msgs, ros-humble-trajectory-msgs, ros-humble-xacro <!nocheck>, ros-humble-ros-workspace
+Homepage: https://github.com/pal-robotics/play_motion2
+Standards-Version: 3.9.2
+
+Package: ros-humble-play-motion2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-humble-control-msgs, ros-humble-controller-manager-msgs, ros-humble-launch, ros-humble-launch-ros, ros-humble-lifecycle-msgs, ros-humble-moveit-ros-planning-interface, ros-humble-play-motion2-msgs, ros-humble-rclcpp, ros-humble-rclcpp-action, ros-humble-rclcpp-lifecycle, ros-humble-sensor-msgs, ros-humble-trajectory-msgs, ros-humble-ros-workspace
+Description: Play a pre-recorded motion on a robot
