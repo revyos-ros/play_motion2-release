@@ -2,6 +2,11 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.1 (2024-04-26)
+------------------
+* fix joint name by replacing find_first_of function to find_last_of
+* Contributors: Aina Irisarri
+
 1.1.0 (2024-04-03)
 ------------------
 * Fix comment
