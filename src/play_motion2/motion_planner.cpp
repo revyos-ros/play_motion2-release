@@ -178,7 +178,7 @@ bool MotionPlanner::is_executable(const MotionInfo & info, const bool skip_plann
   std::unordered_set<std::string> joint_names;
   for (const auto & controller : motion_controller_states_) {
     for (const auto & interface : controller.claimed_interfaces) {
-      const auto joint_name = interface.substr(0, interface.find_first_of('/'));
+      const auto joint_name = interface.substr(0, interface.find_last_of('/'));
       joint_names.insert(joint_name);
     }
   }
