@@ -1,4 +1,4 @@
-play_motion2:
+/play_motion2:
   ros__parameters:
     motion_planner:
       disable_motion_planning: true
@@ -70,7 +70,7 @@ play_motion2:
           usage: test
           description: 'Malformed motion'
 
-motion_loader_test:
+/motion_loader_test:
   ros__parameters:
     motions:
       sample:

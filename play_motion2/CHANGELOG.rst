@@ -2,6 +2,31 @@
 Changelog for package play_motion2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.0 (2024-09-10)
+------------------
+* Remove error log from exists function
+* Check the motion exists for isMotionReady service
+* Add missing option to overwrite when adding motion
+* Add option to run motions asynchronously
+* Create service functions for the PlayMotion2Client
+* Add run_motion executable
+* Add simple client for PlayMotion2
+* Add new motion key only if is not overwritten
+* Create services to add and remove motions
+* Add service to get the info of a motion
+* Contributors: Noel Jimenez
+
+1.2.0 (2024-08-09)
+------------------
+* Wait for robot description and semantic when using planning
+* Wait for the executor to be spinning for play_motion2_test
+* Contributors: Noel Jimenez
+
+1.1.2 (2024-07-04)
+------------------
+* Handle joint state not available in /joint_states topic
+* Contributors: Noel Jimenez
+
 1.1.1 (2024-04-26)
 ------------------
 * fix joint name by replacing find_first_of function to find_last_of

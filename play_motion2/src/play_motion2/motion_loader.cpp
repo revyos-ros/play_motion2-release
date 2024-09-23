@@ -140,10 +140,6 @@ bool MotionLoader::exists(const std::string & motion_key) const
   const bool exists =
     std::find(motion_keys_.begin(), motion_keys_.end(), motion_key) != motion_keys_.end();
 
-  RCLCPP_ERROR_STREAM_EXPRESSION(
-    logger_, !exists,
-    "Motion '" << motion_key << "' is not known");
-
   return exists;
 }
 
@@ -182,5 +178,76 @@ const MotionsMap & MotionLoader::get_motions() const
   return motions_;
 }
 
+bool MotionLoader::add_motion(const MotionMsg & motion_msg, const bool overwrite)
+{
+  if (motion_msg.key.empty()) {
+    RCLCPP_ERROR(logger_, "Motion key is empty.");
+    return false;
+  }
+
+  if (exists(motion_msg.key) && !overwrite) {
+    RCLCPP_ERROR_STREAM(
+      logger_,
+      "Motion '" << motion_msg.key << "' already exists and overwrite option is disabled.");
+    return false;
+  }
+
+  // Check sizes
+  if (motion_msg.joints.empty() || motion_msg.positions.empty() ||
+    motion_msg.times_from_start.empty())
+  {
+    RCLCPP_ERROR_STREAM(
+      logger_,
+      "Motion '" << motion_msg.key <<
+        "' is not valid: empty 'joints', 'positions' or 'times_from_start'.");
+    return false;
+  }
+
+  if (motion_msg.joints.size() !=
+    motion_msg.positions.size() / motion_msg.times_from_start.size())
+  {
+    RCLCPP_ERROR_STREAM(
+      logger_,
+      "Motion '" << motion_msg.key <<
+        "' is not valid: sizes are not compatible. "
+        "'positions' != 'joints' * 'times_from_start' (" << motion_msg.positions.size() <<
+        " != " << motion_msg.times_from_start.size() << "*" << motion_msg.joints.size() << ")");
+    return false;
+  }
+
+  // Create motion info from message
+  MotionInfo motion_info;
+  motion_info.key = motion_msg.key;
+  motion_info.joints = motion_msg.joints;
+  motion_info.positions = motion_msg.positions;
+  motion_info.times = motion_msg.times_from_start;
+  motion_info.name = motion_msg.name;
+  motion_info.description = motion_msg.description;
+  motion_info.usage = motion_msg.usage;
+
+  // Add motion info and key
+  if (!exists(motion_info.key)) {
+    motion_keys_.emplace_back(motion_info.key);
+  }
+  motions_[motion_info.key] = motion_info;
+
+  return true;
+}
+
+bool MotionLoader::remove_motion(const std::string & motion_key)
+{
+  if (!exists(motion_key)) {
+    RCLCPP_ERROR_STREAM(logger_, "Motion '" << motion_key << "' does not exist.");
+    return false;
+  }
+
+  // Remove both motion info and key
+  motions_.erase(motion_key);
+  motion_keys_.erase(
+    std::remove(motion_keys_.begin(), motion_keys_.end(), motion_key),
+    motion_keys_.end());
+
+  return true;
+}
 
 }  // namespace play_motion2
