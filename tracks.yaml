@@ -1,3 +1,4 @@
+release_repo_url: git@github.com:revyos-ros/play_motion2-release.git
 tracks:
   humble:
     actions:
