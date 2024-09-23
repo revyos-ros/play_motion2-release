@@ -11,9 +11,19 @@ ament_auto_add_library(play_motion2 SHARED
   src/play_motion2/play_motion2.cpp
 )
 
+# play_motion2 client
+ament_auto_add_library(client
+  src/play_motion2/client.cpp
+)
+
 # play_motion2_node
 ament_auto_add_executable(play_motion2_node
   src/play_motion2_main.cpp
+)
+
+# run_motion
+ament_auto_add_executable(run_motion
+  src/run_motion.cpp
 )
 
 if(BUILD_TESTING)

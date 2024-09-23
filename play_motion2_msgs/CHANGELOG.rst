@@ -2,6 +2,18 @@
 Changelog for package play_motion2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.0 (2024-09-10)
+------------------
+* Create services to add and remove motions
+* Add service to get the info of a motion
+* Contributors: Noel Jimenez
+
+1.2.0 (2024-08-09)
+------------------
+
+1.1.2 (2024-07-04)
+------------------
+
 1.1.1 (2024-04-26)
 ------------------
 

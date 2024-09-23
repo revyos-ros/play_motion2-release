@@ -91,9 +91,19 @@ Launcher parameters:
 - `use_sim_time`: `true` or `false`. Decide whether to use simulation time or not.
 
 Once started, motion goals can be sent from another terminal:
-
 ```bash
-ros2 action send_goal /play_motion2 play_motion2_msgs/action/PlayMotion2 "{motion_name: motion_1, skip_planning: false}"
+ros2 run play_motion2 run_motion <motion_name> [<skip_planning> <timeout>]
+```
+where
+```
+<motion_name>    - Name of the motion to run.
+<skip_planning>  - Whether to skip planning for approaching to the first position or not. (default: false)
+<timeout>        - Timeout (in seconds) to wait for the motion. (default: 120)
+```
+
+or calling directly the action with the `ros2cli`:
+```bash
+ros2 action send_goal /play_motion2 play_motion2_msgs/action/PlayMotion2 "{motion_name: '', skip_planning: false}"
 ```
 
 Take in account that the goals will be planned or not depending on the following combinations:
@@ -104,7 +114,7 @@ Take in account that the goals will be planned or not depending on the following
 | `true`                    | `false`         | Goal rejected  |
 | `true`                    | `true`          | Not planned    |
 
-PlayMotion2 also includes two services:
+PlayMotion2 also includes the following services:
 
 - To list the available motions
 
@@ -115,5 +125,29 @@ ros2 service call /play_motion2/list_motions play_motion2_msgs/srv/ListMotions
 - To check if a motion is ready to be executed or not
 
 ```bash
-ros2 service call /play_motion2/is_motion_ready play_motion2_msgs/srv/IsMotionReady "motion_key: motion_1"
+ros2 service call /play_motion2/is_motion_ready play_motion2_msgs/srv/IsMotionReady "motion_key: ''"
+```
+
+- To get the information of a motion
+
+```bash
+ros2 service call /play_motion2/get_motion_info play_motion2_msgs/srv/GetMotionInfo "motion_key: ''"
+```
+
+- To add a new motion
+```bash
+ros2 service call /play_motion2/add_motion play_motion2_msgs/srv/AddMotion "motion:
+  key: ''
+  name: ''
+  usage: ''
+  description: ''
+  joints: []
+  positions: []
+  times_from_start: []
+overwrite: false"
+```
+
+- To remove an existing motion
+```bash
+ros2 service call /play_motion2/remove_motion play_motion2_msgs/srv/RemoveMotion "motion_key: ''"
 ```
