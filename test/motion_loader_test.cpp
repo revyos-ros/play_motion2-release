@@ -19,6 +19,7 @@
 
 #include "motion_loader_test.hpp"
 #include "play_motion2/motion_loader.hpp"
+#include "play_motion2_msgs/msg/motion.hpp"
 
 #include "rclcpp/parameter_client.hpp"
 #include "rclcpp/utilities.hpp"
@@ -174,4 +175,80 @@ TEST_F(MotionLoaderTest, ParseAndGetMotionsTest)
   ASSERT_DOUBLE_EQ(motions.at("sample").times[0], sample_motion.times[0]);
   ASSERT_DOUBLE_EQ(motions.at("sample").times[1], sample_motion.times[1]);
   ASSERT_DOUBLE_EQ(motions.at("sample").times[2], sample_motion.times[2]);
+}
+
+TEST_F(MotionLoaderTest, AddWrongMotionTest)
+{
+  play_motion2_msgs::msg::Motion new_motion;
+
+  // Add an empty motion
+  ASSERT_FALSE(motion_loader_->add_motion(new_motion, true));
+
+  // Set only key
+  new_motion.key = "test_new_motion";
+  ASSERT_FALSE(motion_loader_->add_motion(new_motion, true));
+
+  // Set wrong parameters
+  new_motion.joints = {"joint1", "joint2"};
+  new_motion.positions = {0.0, 0.0, 1.0, 2.0, 2.0, 1.0};
+  new_motion.times_from_start = {0.5, 3.1};
+  ASSERT_FALSE(motion_loader_->add_motion(new_motion, true));
+}
+
+TEST_F(MotionLoaderTest, AddMotionTest)
+{
+  play_motion2_msgs::msg::Motion new_motion;
+  new_motion.key = "test_new_motion";
+  new_motion.joints = {"joint1", "joint2"};
+  new_motion.positions = {0.0, 0.0, 1.0, 2.0, 2.0, 1.0};
+  new_motion.times_from_start = {0.5, 3.1, 5.8};
+
+  // Add a new motion and check fields
+  ASSERT_TRUE(motion_loader_->add_motion(new_motion, false));
+  ASSERT_TRUE(motion_loader_->exists("test_new_motion"));
+
+  const auto & new_motion_info = motion_loader_->get_motion_info("test_new_motion");
+  ASSERT_EQ(new_motion_info.joints.size(), 2u);
+  ASSERT_EQ(new_motion_info.joints[0], "joint1");
+  ASSERT_EQ(new_motion_info.joints[1], "joint2");
+  ASSERT_EQ(new_motion_info.positions.size(), 6u);
+  ASSERT_DOUBLE_EQ(new_motion_info.positions[0], 0.0);
+  ASSERT_DOUBLE_EQ(new_motion_info.positions[1], 0.0);
+  ASSERT_DOUBLE_EQ(new_motion_info.positions[2], 1.0);
+  ASSERT_DOUBLE_EQ(new_motion_info.positions[3], 2.0);
+  ASSERT_DOUBLE_EQ(new_motion_info.positions[4], 2.0);
+  ASSERT_DOUBLE_EQ(new_motion_info.positions[5], 1.0);
+  ASSERT_EQ(new_motion_info.times.size(), 3u);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[0], 0.5);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[1], 3.1);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[2], 5.8);
+
+  // Add a change
+  new_motion.times_from_start = {1.0, 2.0, 3.0};
+
+  // overwrite flag set to false, should not update the motion
+  ASSERT_FALSE(motion_loader_->add_motion(new_motion, false));
+  ASSERT_EQ(new_motion_info.times.size(), 3u);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[0], 0.5);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[1], 3.1);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[2], 5.8);
+
+  // overwrite flag set to true, should update the motion
+  ASSERT_TRUE(motion_loader_->add_motion(new_motion, true));
+  ASSERT_EQ(new_motion_info.times.size(), 3u);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[0], 1.0);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[1], 2.0);
+  ASSERT_DOUBLE_EQ(new_motion_info.times[2], 3.0);
+}
+
+TEST_F(MotionLoaderTest, RemoveMotionTest)
+{
+  // Remove a non-existing motion
+  ASSERT_FALSE(motion_loader_->remove_motion("undefined_motion"));
+
+
+  // Remove an existing motion
+  ASSERT_TRUE(motion_loader_->parse_motions());
+  ASSERT_TRUE(motion_loader_->remove_motion("sample"));
+  ASSERT_FALSE(motion_loader_->exists("sample"));
 }
