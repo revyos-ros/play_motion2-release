@@ -18,6 +18,7 @@
 #include <string>
 
 #include "play_motion2/types.hpp"
+#include "play_motion2_msgs/msg/motion.hpp"
 
 #include "rclcpp/logger.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
@@ -29,6 +30,8 @@ using NodeParametersInterfaceSharedPtr =
 
 class MotionLoader
 {
+  using MotionMsg = play_motion2_msgs::msg::Motion;
+
 public:
   MotionLoader(
     const rclcpp::Logger logger,
@@ -41,6 +44,9 @@ public:
   const MotionKeys & get_motion_keys() const;
   const MotionInfo & get_motion_info(const std::string & motion_key) const;
   const MotionsMap & get_motions() const;
+
+  bool add_motion(const MotionMsg & motion_msg, const bool overwrite);
+  bool remove_motion(const std::string & motion_key);
 
 protected:
   MotionKeys parse_motion_keys() const;

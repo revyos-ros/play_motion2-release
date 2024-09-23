@@ -25,6 +25,9 @@
 #include "rclcpp/parameter_client.hpp"
 
 
+using namespace std::chrono_literals;
+constexpr auto kTimeout = 10s;
+
 void PlayMotion2Test::SetUpTestSuite()
 {
   rclcpp::init(0, nullptr);
@@ -49,6 +52,15 @@ void PlayMotion2Test::SetUp()
 
   executor_.add_node(play_motion2_->get_node_base_interface());
   runner_ = std::thread([&]() {executor_.spin();});
+
+  // make sure that executor is spinning
+  const auto start_time = play_motion2_->now();
+  while (!executor_.is_spinning()) {
+    if (play_motion2_->now() - start_time > kTimeout) {
+      FAIL() << "Timeout while waiting for the executor to be spinning";
+    }
+    std::this_thread::sleep_for(100ms);
+  }
 }
 
 void PlayMotion2Test::TearDown()

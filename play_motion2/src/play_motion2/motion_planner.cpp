@@ -22,7 +22,9 @@
 #include "rclcpp_action/create_client.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp/node.hpp"
+#include "rclcpp/wait_for_message.hpp"
 
+#include "std_msgs/msg/string.hpp"
 namespace play_motion2
 {
 using namespace std::chrono_literals;
@@ -157,6 +159,24 @@ void MotionPlanner::check_parameters()
   }
   planning_groups_ = planning_groups_it->second.as_string_array();
 
+  // Wait for robot_description and robot_description_semantic to be published
+  // to avoid dying when creating MoveGroupInterface objects after 10 seconds.
+  const auto wait_for_description = [&](const std::string & topic) {
+      std_msgs::msg::String description;
+      const auto subscription = node_->create_subscription<std_msgs::msg::String>(
+        topic, rclcpp::QoS(1).transient_local(),
+        [](const std_msgs::msg::String::SharedPtr) {});
+
+      while (!rclcpp::wait_for_message(
+          description, subscription, move_group_node_->get_node_options().context(), 10s))
+      {
+        RCLCPP_WARN(node_->get_logger(), "Waiting for %s to be published", topic.c_str());
+      }
+    };
+
+  wait_for_description("/robot_description");
+  wait_for_description("/robot_description_semantic");
+
   for (const auto & group : planning_groups_) {
     move_groups_.emplace_back(std::make_shared<MoveGroupInterface>(move_group_node_, group));
   }
@@ -255,6 +275,12 @@ Result MotionPlanner::execute_motion(const MotionInfo & info, const bool skip_pl
     const auto approach_time =
       calculate_approach_time(approach_info.positions, approach_info.joints);
 
+    if (approach_time < 0.0) {
+      return Result(
+        Result::State::ERROR,
+        "Error calculating approach time, some joint has not been found in /joint_states topic");
+    }
+
     MotionInfo unplanned_info = info;
     if (approach_time > info.times[0]) {
       for (auto & time : unplanned_info.times) {
@@ -306,7 +332,16 @@ double MotionPlanner::calculate_approach_time(
 
   MotionPositions curr_pos;
   for (const auto & joint : joints) {
-    curr_pos.push_back(joint_states_[joint][0]);
+    if (std::find_if(
+        joint_states_.begin(), joint_states_.end(),
+        [&](const auto & joint_state) {return joint_state.first == joint;}) != joint_states_.end())
+    {
+      curr_pos.push_back(joint_states_[joint][0]);
+    } else {
+      RCLCPP_ERROR_STREAM(
+        node_->get_logger(), "Joint '" << joint << "' not found in /joint_states topic");
+      return -1.0;
+    }
   }
   lock.unlock();
 
