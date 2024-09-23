@@ -24,8 +24,11 @@
 #include "controller_manager_msgs/srv/list_controllers.hpp"
 #include "controller_manager_msgs/srv/switch_controller.hpp"
 #include "play_motion2_msgs/action/play_motion2.hpp"
+#include "play_motion2_msgs/srv/add_motion.hpp"
+#include "play_motion2_msgs/srv/get_motion_info.hpp"
 #include "play_motion2_msgs/srv/list_motions.hpp"
 #include "play_motion2_msgs/srv/is_motion_ready.hpp"
+#include "play_motion2_msgs/srv/remove_motion.hpp"
 #include "rclcpp_action/client.hpp"
 #include "rclcpp/client.hpp"
 #include "rclcpp/executors.hpp"
@@ -37,8 +40,11 @@ const std::chrono::duration TIMEOUT = 10s;
 using SwitchController = controller_manager_msgs::srv::SwitchController;
 
 using PlayMotion2 = play_motion2_msgs::action::PlayMotion2;
+using GetMotionInfo = play_motion2_msgs::srv::GetMotionInfo;
 using ListMotions = play_motion2_msgs::srv::ListMotions;
 using IsMotionReady = play_motion2_msgs::srv::IsMotionReady;
+using AddMotion = play_motion2_msgs::srv::AddMotion;
+using RemoveMotion = play_motion2_msgs::srv::RemoveMotion;
 
 using GoalHandlePM2 = rclcpp_action::ClientGoalHandle<PlayMotion2>::SharedPtr;
 using FutureGoalHandlePM2 = std::shared_future<GoalHandlePM2>;
